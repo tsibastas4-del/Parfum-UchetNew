@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>✨ PerfumeFlow Pro v12.3 (Correct Cost/Revenue Logic)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4F46E5; /* Indigo */
+            --primary-hover: #4338ca;
+            --secondary: #10B981; /* Emerald */
+            --danger: #EF4444; /* Red */
+            --warning: #F59E0B; /* Amber */
+            --dark: #1F2937;
+            --light: #F3F4F6;
+            --white: #FFFFFF;
+            --border: #E5E7EB;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding-top: 70px; 
+            padding-bottom: 40px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- NAVIGATION --- */
+        .navbar {
+            background-color: var(--white);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto; 
+            white-space: nowrap;
+            padding-bottom: 0;
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
+        }
+        .navbar-links::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: #6B7280;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover { background-color: #F3F4F6; color: var(--primary); }
+        .nav-btn.active { background-color: #EEF2FF; color: var(--primary); }
+
+        /* --- LAYOUT & CARDS --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .content-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        h1, h2, h3 { margin-top: 0; color: #111827; }
+        h2 { font-size: 1.5rem; margin-bottom: 20px; border-bottom: 2px solid var(--light); padding-bottom: 10px; }
+
+        /* --- FORMS --- */
+        .grid-3-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: #4B5563; }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #F9FAFB;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: var(--white);
+        }
+
+        /* --- BUTTONS --- */
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:active { transform: scale(0.98); }
+        
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        
+        .btn-success { background-color: var(--secondary); color: white; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-warning { background-color: var(--warning); color: white; }
+        
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; display: inline-flex; }
+
+        /* --- TABLES --- */
+        .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        
+        th { background-color: #F9FAFB; text-align: left; padding: 12px 15px; font-size: 0.85rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 12px 15px; border-top: 1px solid var(--border); font-size: 0.95rem; }
+        tr:hover td { background-color: #F3F4F6; }
+        
+        .text-right { text-align: right; }
+        .text-bold { font-weight: 700; }
+        .text-success { color: var(--secondary); }
+        .text-danger { color: var(--danger); }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            background: var(--white);
+            color: var(--dark);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary);
+            animation: slideIn 0.3s ease-out;
+            min-width: 250px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.success { border-left-color: var(--secondary); }
+        .toast.error { border-left-color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* --- DASHBOARD WIDGETS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); }
+        .stat-card.green { background: linear-gradient(135deg, var(--secondary), #059669); }
+        .stat-card h3 { color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 5px; font-weight: 500; }
+        .stat-card .value { font-size: 1.8rem; font-weight: 800; }
+
+        /* --- MODAL --- */
+        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); animation: fadeIn 0.2s; }
+        .modal-content { background-color: var(--white); margin: 5% auto; padding: 0; border-radius: 12px; width: 95%; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); background: #F9FAFB; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 20px; }
+        .receipt-total { font-size: 1.5rem; font-weight: 800; text-align: right; color: var(--primary); margin-top: 15px; border-top: 2px dashed var(--border); padding-top: 15px; }
+
+        /* Print Logic */
+        @media print {
+            body * { visibility: hidden; }
+            .modal.active, .modal.active * { visibility: visible; }
+            .modal { position: absolute; left: 0; top: 0; background: white; }
+            .no-print { display: none; }
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+            .navbar-links { position: fixed; bottom: 0; left: 0; right: 0; top: auto; background: white; border-top: 1px solid var(--border); padding: 10px; justify-content: space-around; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+            .nav-btn { flex-direction: column; font-size: 0.7rem; gap: 4px; padding: 5px; width: 20%; text-align: center; }
+            .nav-btn i { font-size: 1.2rem; }
+            .container { padding-bottom: 80px; } 
+            .navbar-brand { margin: 0 auto; }
+            .navbar { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fa-solid fa-spray-can-sparkles"></i> PerfumeFlow Pro
+        </div>
+        <div class="navbar-links">
+            <button class="nav-btn active" onclick="showSection('dashboard', this)"><i class="fa-solid fa-chart-pie"></i> Головна</button>
+            <button class="nav-btn" onclick="showSection('input-form', this)"><i class="fa-solid fa-cart-plus"></i> Продаж</button>
+            <button class="nav-btn" onclick="showSection('multi-calculator', this)"><i class="fa-solid fa-list-check"></i> Замовлення</button>
+            <button class="nav-btn" onclick="showSection('transactions', this)"><i class="fa-solid fa-clock-rotate-left"></i> Історія</button>
+            <button class="nav-btn" onclick="showSection('admin-panel', this)"><i class="fa-solid fa-gears"></i> Адмінка</button>
+        </div>
+    </nav>
+
+    <div id="toast-container"></div>
+
+    <div class="container">
+
+        <section id="dashboard" class="content-section active">
+            <h2>👋 Вітаємо! Огляд за сьогодні</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Виручка сьогодні</h3>
+                    <div class="value" id="dash-revenue">0 ₴</div>
+                </div>
+                <div class="stat-card green">
+                    <h3>Прибуток сьогодні</h3>
+                    <div class="value" id="dash-profit">0 ₴</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                    <h3>Продажів</h3>
+                    <div class="value" id="dash-count">0</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fa-solid fa-bolt"></i> Швидкі дії</h3>
+                <div class="grid-2-col">
+                    <button class="btn-primary" onclick="showSection('input-form', document.querySelectorAll('.nav-btn')[1])"><i class="fa-solid fa-plus"></i> Новий продаж</button>
+                    <button class="btn-success" onclick="showSection('report', null)"><i class="fa-solid fa-file-invoice-dollar"></i> Створити звіт</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="input-form" class="content-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-bottle-droplet"></i> Швидкий продаж</h2>
+                <div class="grid-3-col" style="margin-bottom: 15px;">
+                    <div>
+                        <label>Націнка</label>
+                        <select id="saleMarkupTierSingle"></select>
+                    </div>
+                    <div>
+                        <label>Джерело</label>
+                        <select id="saleSourceSingle"></select>
+                    </div>
+                    <div>
+                        <label>Клієнт (опційно)</label>
+                        <input type="text" id="clientNameSingle" placeholder="Введіть ім'я..." list="clientList">
+                    </div>
+                </div>
+                
+                <label>Назва Парфуму</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="perfumeName" list="perfumeList" placeholder="Почніть вводити назву...">
+                </div>
+
+                <label>Об'єм (мл)</label>
+                <select id="flaconVolume" style="margin-bottom: 20px;"></select>
+                
+                <button class="btn-primary" onclick="addSale()"><i class="fa-solid fa-check"></i> Зафіксувати Продаж</button>
+            </div>
+        </section>
+
+        <section id="multi-calculator" class="content-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-basket-shopping"></i> Кошик Замовлення</h2>
+                <div class="grid-3-col" style="margin-bottom: 15px;">
+                     <div><label>Націнка</label><select id="saleMarkupTierOrder"></select></div>
+                     <div><label>Джерело</label><select id="saleSourceOrder"></select></div>
+                     <div><label>Клієнт</label><input type="text" id="clientNameOrder" placeholder="Ім'я клієнта" list="clientList"></div>
+                </div>
+
+                <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 15px;">
+                    <div class="grid-2-col">
+                        <div><label>Парфум</label><input type="text" id="orderPerfumeName" list="perfumeList"></div>
+                        <div><label>Об'єм</label><select id="orderFlaconVolume"></select></div>
+                    </div>
+                    <button class="btn-warning" style="margin-top: 10px;" onclick="addItemToOrder()"><i class="fa-solid fa-plus-circle"></i> Додати позицію</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="order-list-table">
+                        <thead><tr><th>Парфум</th><th class="text-right">Об'єм</th><th class="text-right">Ціна</th><th class="text-right">Дія</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <div id="orderTotalSection" style="margin: 20px 0; font-size: 1.2rem; font-weight: bold; text-align: right; color: var(--primary);"></div>
+                
+                <h3 style="margin-top: 20px;"><i class="fa-solid fa-copy"></i> Текст замовлення (для копіювання)</h3>
+                <textarea id="orderSummaryOutput" rows="4" readonly placeholder="Текст замовлення з'явиться тут..."></textarea>
+                <button class="btn-warning" style="margin-top: 10px;" onclick="copyOrderSummary()"><i class="fa-solid fa-copy"></i> Копіювати текст</button>
+                <div class="grid-2-col" style="margin-top: 20px;">
+                    <button class="btn-success" onclick="processOrder()"><i class="fa-solid fa-cash-register"></i> Оформити</button>
+                    <button class="btn-danger" onclick="clearOrder()"><i class="fa-solid fa-trash"></i> Очистити</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="report" class="content-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-chart-line"></i> Звітність</h2>
+                <div class="grid-2-col" style="margin-bottom: 15px;">
+                    <div><label>З дати</label><input type="date" id="startDate"></div>
+                    <div><label>По дату</label><input type="date" id="endDate"></div>
+                </div>
+                <button class="btn-primary" onclick="generateReport()"><i class="fa-solid fa-filter"></i> Сформувати Звіт</button>
+                <div id="reportOutput" style="margin-top: 20px;"></div>
+            </div>
+        </section>
+
+        <section id="transactions" class="content-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-history"></i> Історія Продажів</h2>
+                <div class="grid-3-col" style="margin-bottom: 15px;">
+                    <div><input type="text" id="transactionSearch" onkeyup="renderTransactionHistory()" placeholder="🔍 Пошук..."></div>
+                    <div><select id="historyFilterSource" onchange="renderTransactionHistory()"></select></div>
+                    <div><input type="date" id="historyStartDate" onchange="renderTransactionHistory()"></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="transaction-history-table">
+                        <thead><tr><th>Дата</th><th>Клієнт</th><th>Інфо</th><th>Парфум</th><th class="text-right">Сума</th><th class="text-right">Прибуток</th><th class="text-right">Дія</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p id="transactionSummary" style="margin-top: 15px; font-weight: 600; text-align: right;"></p>
+            </div>
+        </section>
+
+        <section id="client-crm" class="content-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-users"></i> CRM Клієнтів</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="clientSearchInput" list="clientList" placeholder="Введіть ім'я клієнта...">
+                    <button class="btn-primary" style="width: auto;" onclick="showClientHistory()"><i class="fa-solid fa-search"></i></button>
+                </div>
+                <div id="clientCrmSummary"></div>
+                <div class="table-responsive">
+                    <table id="client-history-table">
+                        <thead><tr><th>Дата</th><th>Парфум</th><th class="text-right">Сума</th><th class="text-right">Прибуток</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin-panel" class="content-section">
+            <div class="grid-2-col" style="margin-bottom: 20px;">
+                <button class="btn-primary" onclick="showSection('report', null)">📊 Фінансові звіти</button>
+                <button class="btn-primary" onclick="showSection('client-crm', null)">👥 База клієнтів (CRM)</button>
+                <button class="btn-primary" onclick="showSection('expenses', null)">💸 Додати Витрату</button>
+                <button class="btn-primary" onclick="showSection('calculator', null)">🧮 Калькулятор ціни</button>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fa-solid fa-file-invoice"></i> Прайс-лист для клієнтів (Ціна за мл)</h3>
+                <label>Виберіть націнку для прайсу:</label>
+                <select id="priceListMarkup"></select>
+                <button class="btn-warning" style="margin-top: 10px;" onclick="generatePriceList()"><i class="fa-solid fa-list-ul"></i> Сформувати та скопіювати</button>
+                <textarea id="priceListOutput" rows="10" readonly placeholder="Тут буде згенерований прайс-лист для копіювання..." style="margin-top: 15px;"></textarea>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fa-solid fa-database"></i> Довідник Парфумів</h3>
+                <div style="margin-bottom: 15px; background: #F9FAFB; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                    <div class="grid-2-col" style="margin-bottom: 10px;">
+                        <input type="text" id="adminPerfumeName" placeholder="Назва парфуму">
+                        <input type="number" id="adminBasePrice" placeholder="С/С (грн/мл) БЕЗ ЗНИЖКИ">
+                    </div>
+                    <div class="grid-2-col" style="margin-bottom: 10px;">
+                        <input type="number" id="adminDiscountVolume" placeholder="Об'єм для знижки (мл)" value="5">
+                        <input type="number" id="adminDiscountPrice" placeholder="С/С зі знижкою (грн/мл)">
+                    </div>
+                    <button class="btn-success" onclick="addOrUpdatePerfume()"><i class="fa-solid fa-save"></i> Зберегти/Оновити</button>
+                </div>
+                <input type="text" id="perfumeSearchInput" onkeyup="renderPerfumeList()" placeholder="🔍 Пошук у довіднику..." style="margin-bottom: 10px;">
+                
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table id="perfume-list-table">
+                        <thead><tr><th>Назва</th><th class="text-right">С/С</th><th class="text-right">Дія</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fa-solid fa-flask"></i> Флакони & Налаштування</h3>
+                <div class="grid-2-col">
+                    <div>
+                        <label>Додати Флакон (Об'єм / Ціна)</label>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="adminFlaconVolume" placeholder="мл">
+                            <input type="number" id="adminFlaconCost" placeholder="грн">
+                            <button class="btn-success" style="width: auto;" onclick="addOrUpdateFlacon()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Додати Націнку (Назва / Коеф)</label>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="adminMarkupName" placeholder="Напр: VIP">
+                            <input type="number" id="adminMarkupValue" placeholder="0.10">
+                            <button class="btn-success" style="width: auto;" onclick="addOrUpdateMarkupPreset()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="border: 1px solid var(--danger);">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Зона Небезпеки</h3>
+                <div class="grid-2-col">
+                    <button class="btn-primary" onclick="downloadBackup()"><i class="fa-solid fa-download"></i> Скачати Бекап</button>
+                    <label class="btn-warning" style="text-align:center; cursor:pointer; padding:12px; border-radius:8px; display:block;">
+                        <i class="fa-solid fa-upload"></i> Відновити з файлу
+                        <input type="file" id="restoreFile" style="display: none;" onchange="restoreBackup(this)" accept=".json">
+                    </label>
+                </div>
+                <button class="btn-danger" style="margin-top: 15px;" onclick="clearAllData()"><i class="fa-solid fa-trash-can"></i> Повне очищення бази</button>
+            </div>
+        </section>
+
+        <section id="calculator" class="content-section">
+            <div class="card">
+                <button class="btn-sm" onclick="showSection('admin-panel', null)" style="margin-bottom: 15px;">← Назад</button>
+                <h2>🧮 Калькулятор ціни</h2>
+                <div class="grid-3-col">
+                    <select id="calcMarkupTier"></select>
+                    <input type="text" id="calcPerfumeName" list="perfumeList" placeholder="Парфум">
+                    <select id="calcFlaconVolume"></select>
+                </div>
+                <button class="btn-primary" style="margin-top: 15px;" onclick="calculatePrice()">Розрахувати</button>
+                <div id="calcResult" style="margin-top: 15px;"></div>
+            </div>
+        </section>
+
+        <section id="expenses" class="content-section">
+            <div class="card">
+                <button class="btn-sm" onclick="showSection('admin-panel', null)" style="margin-bottom: 15px;">← Назад</button>
+                <h2>💸 Витрати</h2>
+                <div class="grid-2-col">
+                    <input type="text" id="expenseDescription" placeholder="Опис (напр. Оренда)">
+                    <input type="number" id="expenseAmount" placeholder="Сума (грн)">
+                </div>
+                <button class="btn-danger" style="margin-top: 10px;" onclick="addExpense()">Додати витрату</button>
+                <div class="table-responsive" style="margin-top: 15px;">
+                    <table id="expense-list-table">
+                        <thead><tr><th>Дата</th><th>Опис</th><th class="text-right">Сума</th><th class="text-right">Дія</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div> <div id="receiptModal" class="modal" onclick="if(event.target === this) closeReceiptModal()">
+        <div class="modal-content" id="receiptContent"></div>
+    </div>
+
+    <datalist id="perfumeList"></datalist>
+    <datalist id="clientList"></datalist>
+
+    <script>
+        // --- CONSTANTS & CONFIG ---
+        const DB_NAME = 'perfumePro_DB_v1';
+        const CONFIG_KEYS = {
+            PRICES: 'pp_prices',
+            FLACONS: 'pp_flacons',
+            VOLUMES: 'pp_volumes',
+            MARKUPS: 'pp_markups',
+            SOURCES: 'pp_sources',
+            EXPENSES: 'pp_expenses'
+        };
+        const ROUND_TO_NEAREST_UAH = true;
+        // const PRICE_LIST_COMMON_VOLUME = 10; // Price list uses price per ML
+
+        // --- STATE ---
+        let PERFUME_PRICES = {};
+        let FLACON_VOLUMES = [5, 10, 15, 20, 30, 50, 60];
+        let FLACON_COSTS = { 5: 25, 10: 27, 15: 30, 20: 40, 30: 50, 50: 70, 60: 70 };
+        let MARKUP_PRESETS = { "Роздріб": 0.12, "Опт-1": 0.08, "VIP": 0.10 };
+        let SALES_SOURCES = ["Instagram", "OLX", "Магазин", "Реферал"];
+        let CURRENT_ORDER_LIST = [];
+
+        // --- INITIAL DATA ---
+        // С/С: basePrice (грн/мл), discountVolume (мл), discountPrice (грн/мл)
+        const INITIAL_PRICES = {
+            "Creed Aventus": { basePrice: 45, discountVolume: 10, discountPrice: 42 },
+            "Baccarat Rouge 540": { basePrice: 50, discountVolume: 10, discountPrice: 48 },
+            "Tom Ford Tobacco Vanille": { basePrice: 60, discountVolume: 5, discountPrice: 58 },
+            "Dior Sauvage Elixir": { basePrice: 70, discountVolume: 5, discountPrice: 65 },
+            "YSL Y EDP": { basePrice: 40, discountVolume: 5, discountPrice: 38 },
+            "Tiziana Terenzi Kirke": { basePrice: 48, discountVolume: 5, discountPrice: 46 },
+            "Montale Intense Cafe": { basePrice: 35, discountVolume: 5, discountPrice: 34 },
+            "Mancera Cedrat Boise": { basePrice: 34, discountVolume: 5, discountPrice: 32 },
+            "Versace Eros": { basePrice: 23, discountVolume: 5, discountPrice: 20 },
+            "Armani Acqua di Gio": { basePrice: 30, discountVolume: 5, discountPrice: 28 },
+            "Chanel Bleu de Chanel": { basePrice: 50, discountVolume: 5, discountPrice: 47 }
+        };
+
+        // --- CORE FUNCTIONS ---
+
+        function init() {
+            loadData();
+            updateDashboard();
+            populateFormOptions();
+            renderTransactionHistory(); 
+            // set default values for admin inputs
+            document.getElementById('adminDiscountVolume').value = 5;
+            if (!localStorage.getItem(CONFIG_KEYS.PRICES)) {
+                saveInitialData(); 
+                showToast("✨ Вітаємо в PerfumeFlow Pro! Базу ініціалізовано.", "success");
+            }
+        }
+
+        function loadData() {
+            PERFUME_PRICES = JSON.parse(localStorage.getItem(CONFIG_KEYS.PRICES)) || INITIAL_PRICES;
+            FLACON_VOLUMES = JSON.parse(localStorage.getItem(CONFIG_KEYS.VOLUMES)) || FLACON_VOLUMES;
+            FLACON_COSTS = JSON.parse(localStorage.getItem(CONFIG_KEYS.FLACONS)) || FLACON_COSTS;
+            MARKUP_PRESETS = JSON.parse(localStorage.getItem(CONFIG_KEYS.MARKUPS)) || MARKUP_PRESETS;
+            SALES_SOURCES = JSON.parse(localStorage.getItem(CONFIG_KEYS.SOURCES)) || SALES_SOURCES;
+        }
+
+        function getTransactions() { return JSON.parse(localStorage.getItem(DB_NAME)) || []; }
+        function saveTransactions(data) { localStorage.setItem(DB_NAME, JSON.stringify(data)); }
+        function getExpenses() { return JSON.parse(localStorage.getItem(CONFIG_KEYS.EXPENSES)) || []; }
+        function saveExpenses(data) { localStorage.setItem(CONFIG_KEYS.EXPENSES, JSON.stringify(data)); }
+
+        // --- DASHBOARD LOGIC ---
+        function updateDashboard() {
+            const today = new Date().setHours(0,0,0,0);
+            const txs = getTransactions();
+            const todayTxs = txs.filter(t => t.timestamp >= today);
+            
+            const revenue = todayTxs.reduce((sum, t) => sum + t.revenue, 0);
+            const profit = todayTxs.reduce((sum, t) => sum + t.profit, 0);
+            
+            document.getElementById('dash-revenue').innerText = `${revenue.toLocaleString()} ₴`;
+            document.getElementById('dash-profit').innerText = `${profit.toLocaleString()} ₴`;
+            document.getElementById('dash-count').innerText = todayTxs.length;
+        }
+
+        // --- NAVIGATION ---
+        window.showSection = function(sectionId, btnElement) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            if(btnElement) {
+                document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+
+            if(sectionId === 'dashboard') updateDashboard();
+            if(sectionId === 'transactions') renderTransactionHistory();
+            if(sectionId === 'admin-panel') { renderPerfumeList(); }
+            if(sectionId === 'expenses') renderExpenseList();
+        }
+
+        // --- FORM HELPERS ---
+        function populateFormOptions() {
+            // Volumes
+            const volSelects = ['flaconVolume', 'orderFlaconVolume', 'calcFlaconVolume', 'adminFlaconVolume'];
+            volSelects.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.innerHTML = '<option value="" disabled selected>Об\'єм</option>';
+                    FLACON_VOLUMES.sort((a,b) => a-b).forEach(v => {
+                        const opt = document.createElement('option');
+                        opt.value = v;
+                        opt.text = `${v} мл (${FLACON_COSTS[v] || 0} грн)`;
+                        el.appendChild(opt);
+                    });
+                }
+            });
+
+            // Markups
+            const markupSelects = ['saleMarkupTierSingle', 'saleMarkupTierOrder', 'calcMarkupTier', 'priceListMarkup'];
+            markupSelects.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.innerHTML = '';
+                    Object.keys(MARKUP_PRESETS).forEach(k => {
+                        const opt = document.createElement('option');
+                        opt.value = k;
+                        opt.text = `${k} (${(MARKUP_PRESETS[k]*100).toFixed(0)}%)`;
+                        el.appendChild(opt);
+                    });
+                }
+            });
+
+            // Sources
+            const sourceSelects = ['saleSourceSingle', 'saleSourceOrder', 'historyFilterSource'];
+            sourceSelects.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.innerHTML = id.includes('Filter') ? '<option value="">Всі джерела</option>' : '';
+                    SALES_SOURCES.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s;
+                        opt.text = s;
+                        el.appendChild(opt);
+                    });
+                }
+            });
+
+            // Datalists
+            const pList = document.getElementById('perfumeList');
+            pList.innerHTML = '';
+            Object.keys(PERFUME_PRICES).sort().forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n;
+                pList.appendChild(opt);
+            });
+
+            const cList = document.getElementById('clientList');
+            cList.innerHTML = '';
+            const clients = new Set(getTransactions().map(t => t.clientName).filter(n => n && n !== '---'));
+            clients.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                cList.appendChild(opt);
+            });
+        }
+
+        // --- CALCULATIONS (UPDATED FOR FIXED CLIENT PRICE) ---
+        function calculateCost(perfumeName, vol, markupName) {
+            const pData = PERFUME_PRICES[perfumeName];
+            if(!pData) return null;
+
+            const markup = MARKUP_PRESETS[markupName] || 0;
+            const flacon = FLACON_COSTS[vol] || 0;
+            
+            // 1. COST PRICE (SOBIVARTIST) LOGIC: Use discount cost for PROFIT calculation if threshold is met
+            // С/С для розрахунку прибутку (залежить від об'єму закупівлі)
+            const costPricePerML = (vol >= pData.discountVolume && pData.discountVolume > 0 && pData.discountPrice < pData.basePrice) 
+                ? pData.discountPrice 
+                : pData.basePrice;
+                
+            const costTotal = (costPricePerML * vol) + flacon;
+            
+            // 2. REVENUE PRICE LOGIC: ALWAYS use the standard basePrice (without discount) for client price
+            // Ціна для клієнта (фіксована, не залежить від об'єму)
+            const clientPricePerML = pData.basePrice * (1 + markup);
+            
+            const revenueRaw = clientPricePerML * vol + flacon;
+            
+            // Заокруглення до найближчої гривні
+            const revenue = ROUND_TO_NEAREST_UAH ? Math.round(revenueRaw) : revenueRaw;
+            
+            // 3. PROFIT
+            const profit = revenue - costTotal;
+
+            return { 
+                revenue, 
+                profit, 
+                cost: costTotal, 
+                basePrice: pData.basePrice // Base cost per ML for reference
+            };
+        }
+
+        // --- ACTIONS: SALE ---
+        window.addSale = function() {
+            const name = document.getElementById('perfumeName').value.trim();
+            const vol = parseFloat(document.getElementById('flaconVolume').value);
+            const markup = document.getElementById('saleMarkupTierSingle').value;
+            const source = document.getElementById('saleSourceSingle').value;
+            const client = document.getElementById('clientNameSingle').value.trim();
+
+            if(!name || isNaN(vol) || !markup) { showToast("Заповніть назву, об'єм та націнку", "error"); return; }
+
+            const calc = calculateCost(name, vol, markup);
+            if(!calc) { showToast("Парфум не знайдено в базі!", "error"); return; }
+
+            const tx = {
+                id: Date.now(),
+                timestamp: Date.now(),
+                clientName: client || '---',
+                source: source,
+                markupTier: markup,
+                perfumeName: name,
+                quantityML: vol,
+                revenue: calc.revenue,
+                profit: calc.profit,
+                costTotal: calc.cost
+            };
+
+            const txs = getTransactions();
+            txs.push(tx);
+            saveTransactions(txs);
+
+            showToast(`Продано: ${name} (${calc.revenue} ₴)`, "success");
+            showModalReceipt([tx], calc.revenue, client);
+            
+            document.getElementById('perfumeName').value = '';
+            document.getElementById('clientNameSingle').value = '';
+            updateDashboard();
+            populateFormOptions();
+        }
+
+        // --- ACTIONS: ORDER ---
+        window.addItemToOrder = function() {
+            const name = document.getElementById('orderPerfumeName').value.trim();
+            const vol = parseFloat(document.getElementById('orderFlaconVolume').value);
+            const markup = document.getElementById('saleMarkupTierOrder').value;
+
+            if(!name || isNaN(vol) || !markup) return;
+            const calc = calculateCost(name, vol, markup);
+            if(!calc) { showToast("Парфум не знайдено", "error"); return; }
+
+            CURRENT_ORDER_LIST.push({ ...calc, name, vol, markup });
+            renderOrderList();
+            document.getElementById('orderPerfumeName').value = '';
+            showToast("Позицію додано до замовлення", "warning");
+        }
+
+        function renderOrderList() {
+            const tbody = document.querySelector('#order-list-table tbody');
+            tbody.innerHTML = '';
+            let total = 0;
+            const summaryEl = document.getElementById('orderSummaryOutput');
+            let summaryText = '';
+
+            if (CURRENT_ORDER_LIST.length > 0) {
+                 summaryText = "Ваше замовлення:\n";
+            }
+
+            CURRENT_ORDER_LIST.forEach((item, idx) => {
+                total += item.revenue;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td class="text-right">${item.vol} мл</td>
+                        <td class="text-right">${item.revenue} ₴</td>
+                        <td class="text-right"><button class="btn-danger btn-sm" onclick="removeOrderItem(${idx})"><i class="fa-solid fa-xmark"></i></button></td>
+                    </tr>
+                `;
+                 // Generate summary text (Feature 2)
+                summaryText += `${item.name} (${item.vol} мл) - ${item.revenue} ₴\n`;
+            });
+            
+            document.getElementById('orderTotalSection').innerText = `Разом: ${total} ₴`;
+            
+            if (CURRENT_ORDER_LIST.length > 0) {
+                summaryText += `\nРазом: ${total} ₴`;
+            }
+            summaryEl.value = summaryText;
+        }
+
+        window.removeOrderItem = function(idx) {
+            CURRENT_ORDER_LIST.splice(idx, 1);
+            renderOrderList();
+        }
+
+        window.processOrder = function() {
+            if(CURRENT_ORDER_LIST.length === 0) return;
+            const client = document.getElementById('clientNameOrder').value.trim();
+            const source = document.getElementById('saleSourceOrder').value;
+            const txs = getTransactions();
+            let totalRev = 0;
+            const receiptItems = [];
+
+            CURRENT_ORDER_LIST.forEach(item => {
+                const tx = {
+                    id: Date.now() + Math.random(),
+                    timestamp: Date.now(),
+                    clientName: client || '---',
+                    source: source,
+                    markupTier: item.markup,
+                    perfumeName: item.name,
+                    quantityML: item.vol,
+                    revenue: item.revenue,
+                    profit: item.profit,
+                    costTotal: item.cost
+                };
+                txs.push(tx);
+                receiptItems.push(tx);
+                totalRev += item.revenue;
+            });
+
+            saveTransactions(txs);
+            showToast("Замовлення оформлено!", "success");
+            showModalReceipt(receiptItems, totalRev, client);
+            window.clearOrder();
+            updateDashboard();
+            populateFormOptions();
+        }
+
+        window.clearOrder = function() {
+            CURRENT_ORDER_LIST = [];
+            renderOrderList();
+            document.getElementById('clientNameOrder').value = '';
+        }
+        
+        // Copy Order Summary
+        window.copyOrderSummary = function() {
+            const outputEl = document.getElementById('orderSummaryOutput');
+            if (outputEl.value) {
+                outputEl.select();
+                navigator.clipboard.writeText(outputEl.value).then(() => {
+                    showToast("✅ Текст замовлення скопійовано!", "success");
+                }).catch(err => {
+                    showToast("Помилка копіювання. Спробуйте вручну.", "error");
+                });
+            } else {
+                 showToast("Немає позицій у замовленні.", "error");
+            }
+        }
+
+        // --- HISTORY & REPORT ---
+        window.renderTransactionHistory = function() {
+            const search = document.getElementById('transactionSearch').value.toLowerCase();
+            const sourceFilter = document.getElementById('historyFilterSource').value;
+            const dateFilter = document.getElementById('historyStartDate').value;
+            
+            const tbody = document.querySelector('#transaction-history-table tbody');
+            tbody.innerHTML = '';
+            
+            let txs = getTransactions().sort((a,b) => b.timestamp - a.timestamp);
+            let filteredCount = 0;
+            let totalRev = 0;
+            let totalProf = 0;
+
+            txs.forEach(t => {
+                if(search && !t.perfumeName.toLowerCase().includes(search) && !t.clientName.toLowerCase().includes(search)) return;
+                if(sourceFilter && t.source !== sourceFilter) return;
+                if(dateFilter) {
+                    const txDate = new Date(t.timestamp).toISOString().split('T')[0];
+                    if(txDate !== dateFilter) return;
+                }
+
+                filteredCount++;
+                totalRev += t.revenue;
+                totalProf += t.profit;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${new Date(t.timestamp).toLocaleDateString()}</td>
+                        <td>${t.clientName}</td>
+                        <td style="font-size: 0.8rem; color: gray;">${t.source}</td>
+                        <td>${t.perfumeName} (${t.quantityML} мл)</td>
+                        <td class="text-right text-bold">${t.revenue}</td>
+                        <td class="text-right ${t.profit >= 0 ? 'text-success' : 'text-danger'}">${t.profit.toFixed(1)}</td>
+                        <td class="text-right"><button class="btn-danger btn-sm" onclick="deleteTx(${t.id})"><i class="fa-solid fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('transactionSummary').innerHTML = `Записів: ${filteredCount} | Виручка: ${totalRev} ₴ | Прибуток: ${totalProf.toFixed(2)} ₴`;
+        }
+
+        window.deleteTx = function(id) {
+            if(!confirm("Видалити запис?")) return;
+            let txs = getTransactions().filter(t => t.id !== id);
+            saveTransactions(txs);
+            renderTransactionHistory();
+            updateDashboard();
+            showToast("Видалено", "error");
+        }
+
+        window.generateReport = function() {
+            const start = new Date(document.getElementById('startDate').value).getTime() || 0;
+            const end = new Date(document.getElementById('endDate').value).setHours(23,59,59,999) || Date.now();
+            
+            const txs = getTransactions().filter(t => t.timestamp >= start && t.timestamp <= end);
+            const exps = getExpenses().filter(e => e.timestamp >= start && e.timestamp <= end);
+
+            const revenue = txs.reduce((sum, t) => sum + t.revenue, 0);
+            const profitGross = txs.reduce((sum, t) => sum + t.profit, 0);
+            const expenseTotal = exps.reduce((sum, e) => sum + e.amount, 0);
+            const netProfit = profitGross - expenseTotal;
+            const netColor = netProfit >= 0 ? 'text-success' : 'text-danger';
+
+            const html = `
+                <table class="report-table">
+                    <tr><td>💰 Виручка</td><td class="text-right text-bold">${revenue} ₴</td></tr>
+                    <tr><td>📈 Валовий прибуток</td><td class="text-right text-success">${profitGross.toFixed(2)} ₴</td></tr>
+                    <tr><td>💸 Витрати</td><td class="text-right text-danger">-${expenseTotal} ₴</td></tr>
+                    <tr style="background: #ECFDF5;"><td>🏁 ЧИСТИЙ ПРИБУТОК</td><td class="text-right text-bold ${netColor}" style="font-size: 1.2rem;">${netProfit.toFixed(2)} ₴</td></tr>
+                </table>
+            `;
+            document.getElementById('reportOutput').innerHTML = html;
+        }
+
+        // --- ADMIN & HELPERS ---
+        // UPDATED: Function now handles basePrice, discountVolume, and discountPrice
+        window.addOrUpdatePerfume = function() {
+            const name = document.getElementById('adminPerfumeName').value.trim();
+            const basePrice = parseFloat(document.getElementById('adminBasePrice').value);
+            const discountVolume = parseFloat(document.getElementById('adminDiscountVolume').value) || 0;
+            const discountPrice = parseFloat(document.getElementById('adminDiscountPrice').value) || basePrice;
+
+            if(!name || isNaN(basePrice) || basePrice <= 0) { showToast("Введіть назву та базову С/С!", "error"); return; }
+            
+            // Забезпечуємо, що discountPrice не перевищує basePrice
+            const finalDiscountPrice = Math.min(basePrice, discountPrice);
+            
+            PERFUME_PRICES[name] = { 
+                basePrice: basePrice, 
+                discountVolume: discountVolume, 
+                discountPrice: finalDiscountPrice 
+            };
+            
+            localStorage.setItem(CONFIG_KEYS.PRICES, JSON.stringify(PERFUME_PRICES));
+            renderPerfumeList();
+            populateFormOptions();
+            showToast("Парфум збережено!", "success");
+            
+            // Clear inputs after save, reset discount volume to default
+            document.getElementById('adminPerfumeName').value = '';
+            document.getElementById('adminBasePrice').value = '';
+            document.getElementById('adminDiscountVolume').value = '5';
+            document.getElementById('adminDiscountPrice').value = '';
+        }
+        
+        // Add or Update Markup Preset
+        window.addOrUpdateMarkupPreset = function() {
+            const name = document.getElementById('adminMarkupName').value.trim();
+            const value = parseFloat(document.getElementById('adminMarkupValue').value);
+            if(!name || isNaN(value)) return;
+
+            MARKUP_PRESETS[name] = value;
+            localStorage.setItem(CONFIG_KEYS.MARKUPS, JSON.stringify(MARKUP_PRESETS));
+            populateFormOptions();
+            showToast(`Націнку "${name}" оновлено!`, "success");
+            document.getElementById('adminMarkupName').value = '';
+            document.getElementById('adminMarkupValue').value = '';
+        }
+        
+        // UPDATED: Generate Price List (Fixed Price Per ML logic)
+        window.generatePriceList = function() {
+            const markupName = document.getElementById('priceListMarkup').value;
+            const markup = MARKUP_PRESETS[markupName];
+
+            if (!markup) {
+                showToast("Виберіть націнку!", "error");
+                return;
+            }
+
+            let priceListText = `Прайс-лист "PerfumeFlow" (${markupName}):\n\n`;
+            let totalItems = 0;
+            const perfumeNames = Object.keys(PERFUME_PRICES).sort();
+
+            perfumeNames.forEach(name => {
+                const pData = PERFUME_PRICES[name];
+                
+                // Calculate the FIXED retail price per ML (without flacon)
+                // Always use basePrice for client price
+                let retailPriceStandard = pData.basePrice * (1 + markup);
+                
+                let priceLine = `✨ ${name}: ${retailPriceStandard.toFixed(2)} ₴/мл`;
+                
+                // No longer showing the misleading "discounted client price"
+                priceListText += priceLine + `\n`;
+                totalItems++;
+            });
+            
+            // Add flacon cost info (important for the client to calculate total price)
+            priceListText += `\n--- 🧴 Вартість порожніх флаконів (додається до ціни парфуму) ---\n`;
+            FLACON_VOLUMES.sort((a,b)=>a-b).forEach(v => {
+                priceListText += `Флакон ${v} мл: ${FLACON_COSTS[v] || 0} ₴\n`;
+            });
+
+            const outputEl = document.getElementById('priceListOutput');
+            outputEl.value = priceListText;
+            
+            // Копіювання в буфер обміну
+            outputEl.select();
+            navigator.clipboard.writeText(outputEl.value).then(() => {
+                showToast(`✅ Прайс-лист (${totalItems} позицій) скопійовано!`, "success");
+            }).catch(err => {
+                showToast("Помилка копіювання. Спробуйте вручну.", "error");
+            });
+        }
+
+        window.renderPerfumeList = function() {
+            const filter = document.getElementById('perfumeSearchInput').value.toLowerCase();
+            const tbody = document.querySelector('#perfume-list-table tbody');
+            tbody.innerHTML = '';
+            Object.keys(PERFUME_PRICES).sort().forEach(n => {
+                if(filter && !n.toLowerCase().includes(filter)) return;
+                
+                const pData = PERFUME_PRICES[n];
+                let priceText = `${pData.basePrice} ₴/мл`;
+                if (pData.discountVolume > 0 && pData.discountPrice < pData.basePrice) {
+                    priceText += `<br><small style="color:var(--secondary)">${pData.discountPrice} ₴/мл (від ${pData.discountVolume} мл)</small>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${n}</td>
+                        <td class="text-right">${priceText}</td>
+                        <td class="text-right"><button class="btn-danger btn-sm" onclick="deletePerfume('${n}')"><i class="fa-solid fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.deletePerfume = function(name) {
+            if(!confirm("Видалити " + name + "?")) return;
+            delete PERFUME_PRICES[name];
+            localStorage.setItem(CONFIG_KEYS.PRICES, JSON.stringify(PERFUME_PRICES));
+            renderPerfumeList();
+            populateFormOptions();
+        }
+        
+        window.addOrUpdateFlacon = function() {
+            const vol = parseFloat(document.getElementById('adminFlaconVolume').value);
+            const cost = parseFloat(document.getElementById('adminFlaconCost').value);
+            if(isNaN(vol) || isNaN(cost)) return;
+            
+            FLACON_COSTS[vol] = cost;
+            if(!FLACON_VOLUMES.includes(vol)) {
+                 FLACON_VOLUMES.push(vol);
+                 localStorage.setItem(CONFIG_KEYS.VOLUMES, JSON.stringify(FLACON_VOLUMES));
+            }
+            localStorage.setItem(CONFIG_KEYS.FLACONS, JSON.stringify(FLACON_COSTS));
+            
+            populateFormOptions();
+            showToast(`Флакон ${vol} мл збережено!`, "success");
+            document.getElementById('adminFlaconVolume').value = '';
+            document.getElementById('adminFlaconCost').value = '';
+        }
+        
+        // --- MODAL RECEIPT ---
+        function showModalReceipt(items, total, client) {
+            let html = `
+                <div class="modal-header">
+                    <h3 style="margin:0">Чек</h3>
+                    <button class="btn-sm no-print" style="width:auto" onclick="closeReceiptModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Дата:</strong> ${new Date().toLocaleString('uk-UA')}</p>
+                    <p><strong>Клієнт:</strong> ${client || 'Гість'}</p>
+                    <table style="width:100%; border-top:1px solid #eee; margin-top:10px;">
+            `;
+            items.forEach(i => {
+                html += `<tr><td style="padding:5px 0">${i.perfumeName} (${i.quantityML} мл)</td><td class="text-right">${i.revenue} ₴</td></tr>`;
+            });
+            html += `</table><div class="receipt-total">До сплати: ${total} ₴</div>
+            <button class="btn-success no-print" onclick="window.print()" style="margin-top:20px;"><i class="fa-solid fa-print"></i> Друк</button></div>`;
+            
+            document.getElementById('receiptContent').innerHTML = html;
+            document.getElementById('receiptModal').style.display = 'flex';
+        }
+        window.closeReceiptModal = function() { document.getElementById('receiptModal').style.display = 'none'; }
+
+        // --- TOASTS ---
+        function showToast(msg, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- SYSTEM ---
+        window.saveInitialData = function() {
+            localStorage.setItem(CONFIG_KEYS.PRICES, JSON.stringify(INITIAL_PRICES));
+            localStorage.setItem(CONFIG_KEYS.FLACONS, JSON.stringify(FLACON_COSTS));
+            localStorage.setItem(CONFIG_KEYS.VOLUMES, JSON.stringify(FLACON_VOLUMES));
+            localStorage.setItem(CONFIG_KEYS.MARKUPS, JSON.stringify(MARKUP_PRESETS));
+            localStorage.setItem(CONFIG_KEYS.SOURCES, JSON.stringify(SALES_SOURCES));
+        }
+
+        window.clearAllData = function() {
+            if(confirm("ВИДАЛИТИ ВСЕ? Це неможливо відмінити.")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        window.downloadBackup = function() {
+            const data = { 
+                tx: getTransactions(), 
+                exp: getExpenses(), 
+                cfg: { 
+                    prices: PERFUME_PRICES, 
+                    flacons: FLACON_COSTS,
+                    markups: MARKUP_PRESETS,
+                    volumes: FLACON_VOLUMES,
+                    sources: SALES_SOURCES
+                } 
+            };
+            const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        window.restoreBackup = function(input) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(data.tx) saveTransactions(data.tx);
+                    if(data.exp) saveExpenses(data.exp);
+                    if(data.cfg) {
+                        localStorage.setItem(CONFIG_KEYS.PRICES, JSON.stringify(data.cfg.prices));
+                        localStorage.setItem(CONFIG_KEYS.FLACONS, JSON.stringify(data.cfg.flacons));
+                        localStorage.setItem(CONFIG_KEYS.MARKUPS, JSON.stringify(data.cfg.markups));
+                        if(data.cfg.volumes) localStorage.setItem(CONFIG_KEYS.VOLUMES, JSON.stringify(data.cfg.volumes));
+                        if(data.cfg.sources) localStorage.setItem(CONFIG_KEYS.SOURCES, JSON.stringify(data.cfg.sources));
+                    }
+                    alert("Відновлено! Додаток буде перезавантажено.");
+                    location.reload();
+                } catch(err) { showToast("Помилка файлу. Перевірте формат.", "error"); }
+            };
+            reader.readAsText(input.files[0]);
+        }
+
+        // Calculator Logic
+        window.calculatePrice = function() {
+            const n = document.getElementById('calcPerfumeName').value;
+            const v = parseFloat(document.getElementById('calcFlaconVolume').value);
+            const m = document.getElementById('calcMarkupTier').value;
+            if (!n || isNaN(v) || !m) return;
+            
+            const res = calculateCost(n,v,m);
+            const el = document.getElementById('calcResult');
+            if(res) {
+                el.innerHTML = `<div class="stat-card green" style="text-align:center"><h3>Ціна для клієнта</h3><div class="value">${res.revenue} ₴</div><small>Прибуток: ${res.profit.toFixed(1)} ₴</small></div>`;
+            } else {
+                el.innerHTML = "Помилка даних. Перевірте парфум.";
+            }
+        }
+
+        // Expenses Logic
+        window.addExpense = function() {
+            const d = document.getElementById('expenseDescription').value;
+            const a = parseFloat(document.getElementById('expenseAmount').value);
+            if(!d || isNaN(a) || a <= 0) { showToast("Введіть опис та суму витрати.", "error"); return; }
+            
+            const exps = getExpenses();
+            exps.push({ id: Date.now(), timestamp: Date.now(), description: d, amount: a });
+            saveExpenses(exps);
+            showToast("Витрату додано", "warning");
+            document.getElementById('expenseDescription').value = '';
+            document.getElementById('expenseAmount').value = '';
+            renderExpenseList();
+        }
+
+        window.renderExpenseList = function() {
+            const tb = document.querySelector('#expense-list-table tbody');
+            tb.innerHTML = '';
+            getExpenses().reverse().forEach(e => {
+                tb.innerHTML += `<tr><td>${new Date(e.timestamp).toLocaleDateString()}</td><td>${e.description}</td><td class="text-right text-danger">-${e.amount}</td><td class="text-right"><button class="btn-sm btn-danger" onclick="deleteExpense(${e.id})">✕</button></td></tr>`;
+            });
+        }
+        window.deleteExpense = function(id) {
+            saveExpenses(getExpenses().filter(e => e.id !== id));
+            renderExpenseList();
+            showToast("Витрату видалено.", "error");
+        }
+        
+        // CRM Logic
+        window.showClientHistory = function() {
+             const name = document.getElementById('clientSearchInput').value.toLowerCase().trim();
+             if (!name) return;
+             const trs = getTransactions().filter(t => t.clientName.toLowerCase() === name);
+             
+             let totalRevenue = trs.reduce((a,b) => a+b.revenue, 0);
+             let totalProfit = trs.reduce((a,b) => a+b.profit, 0);
+             
+             document.getElementById('clientCrmSummary').innerHTML = `<div class="stat-card green" style="background: var(--primary);"><h3 style="color:white; margin-bottom: 5px;">Покупок: ${trs.length}</h3><h3 style="color:white;">Загальна виручка: ${totalRevenue} ₴</h3></div>`;
+             
+             const tb = document.querySelector('#client-history-table tbody'); tb.innerHTML = '';
+             trs.sort((a,b) => b.timestamp - a.timestamp).forEach(t => tb.innerHTML += `<tr><td>${new Date(t.timestamp).toLocaleDateString()}</td><td>${t.perfumeName} (${t.quantityML} мл)</td><td class="text-right">${t.revenue} ₴</td><td class="text-right ${t.profit >= 0 ? 'text-success' : 'text-danger'}">${t.profit.toFixed(2)} ₴</td></tr>`);
+        }
+
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
